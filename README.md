@@ -14,6 +14,20 @@ I built the first version as a quick internal tool for a real team and rebuilt i
 - **Reads the views, not the tables:** it queries the ERP-style views (`pagos.v_orden_pago`, `v_estado_cuenta_proveedor`, `v_cuentas_a_pagar`) of the data platform.
 - **Tested end to end:** unit tests for the calculations, and tests that run the whole app and compare every KPI with plain SQL. CI runs them on GitHub against a fresh database.
 
+## Screenshots
+
+**Orders**: filters, KPIs, monthly amount and top suppliers.
+
+![Orders page](docs/images/streamlit-orders.png)
+
+**Supplier statement**: a supplier's orders with their pending balance.
+
+![Supplier statement page](docs/images/streamlit-statement.png)
+
+**Due dates**: what is overdue, what is due in the next N days, and what has no due date loaded.
+
+![Due dates page](docs/images/streamlit-due.png)
+
 ## Run it
 
 1. Create the database with the data platform (needs Docker, `psql` and Python 3.10+):
