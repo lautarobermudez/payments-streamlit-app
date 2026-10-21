@@ -34,7 +34,7 @@ class KpiTests(unittest.TestCase):
     def test_monthly_totals_group_by_month(self):
         m = metrics.monthly_totals(orders_frame())
         self.assertEqual(m.tolist(), [150.0, 225.0])
-        self.assertEqual(m.index[0], pd.Timestamp('2026-09-01'))
+        self.assertEqual(list(m.index), ['2026-09', '2026-10'])
 
     def test_top_suppliers_sorted_and_limited(self):
         top = metrics.top_suppliers(orders_frame(), n=2)
@@ -48,6 +48,17 @@ class LabelTests(unittest.TestCase):
         self.assertIn('Supplier', shown.columns)
         self.assertEqual(shown['Status'].tolist(), ['Pending', 'Paid', 'Pending', 'Pending'])
         self.assertEqual(original['estado'].tolist()[0], 'pendiente')   # input untouched
+
+
+class MissingValueTests(unittest.TestCase):
+    def test_missing_op_number_and_dates_are_real_nulls_not_the_text_none(self):
+        df = pd.DataFrame({'nro_op': [5, None], 'fecha_op': [dt.date(2026, 1, 2), dt.date(2026, 1, 3)],
+                           'fecha_vencimiento': [None, dt.date(2026, 2, 1)]})
+        shown = metrics.label_columns(df)
+        self.assertTrue(pd.isna(shown['OP no.'].iloc[1]))
+        self.assertEqual(str(shown['OP no.'].dtype), 'Int64')
+        self.assertTrue(pd.isna(shown['Due date'].iloc[0]))
+        self.assertTrue(pd.api.types.is_datetime64_any_dtype(shown['Due date']))
 
 
 class DueTests(unittest.TestCase):

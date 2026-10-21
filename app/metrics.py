@@ -13,6 +13,9 @@ COLUMN_LABELS = {
 }
 
 
+DATE_COLUMNS = ('Date', 'Due date', 'Payment date')
+
+
 def money(x: float) -> str:
     return f'$ {x:,.0f}'
 
@@ -20,6 +23,11 @@ def money(x: float) -> str:
 def label_columns(df: pd.DataFrame) -> pd.DataFrame:
     """English headers and status/situation labels for display (the database keeps its own vocabulary)."""
     out = df.rename(columns=COLUMN_LABELS)
+    if 'OP no.' in out:                       # nullable integer: an order without number shows blank, not "None"
+        out['OP no.'] = pd.to_numeric(out['OP no.']).astype('Int64')
+    for col in DATE_COLUMNS:                  # real dates: a missing one shows blank
+        if col in out:
+            out[col] = pd.to_datetime(out[col])
     if 'Status' in out:
         out['Status'] = out['Status'].map(STATUS_LABELS).fillna(out['Status'])
     if 'Situation' in out:
@@ -36,8 +44,9 @@ def order_kpis(df: pd.DataFrame, today: dt.date) -> dict:
 
 
 def monthly_totals(df: pd.DataFrame) -> pd.Series:
-    month = pd.to_datetime(df.fecha_op).dt.to_period('M').dt.to_timestamp()
-    return df.groupby(month)['importe_total'].sum()
+    """Amount per month, indexed by 'YYYY-MM' text so the chart labels every month once and in order."""
+    month = pd.to_datetime(df.fecha_op).dt.strftime('%Y-%m')
+    return df.groupby(month)['importe_total'].sum().sort_index()
 
 
 def top_suppliers(df: pd.DataFrame, n: int = 8) -> pd.Series:

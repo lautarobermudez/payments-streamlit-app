@@ -1,6 +1,6 @@
 import streamlit as st
 
-from app import metrics, queries
+from app import metrics, queries, ui
 from app.filters import Filters
 
 
@@ -17,4 +17,4 @@ def render(f: Filters) -> None:
             st.caption('None.')
         else:
             st.dataframe(metrics.label_columns(buckets[key].drop(columns=['situacion'])), width='stretch', hide_index=True,
-                         column_config={'Amount': st.column_config.NumberColumn(format='%.2f')})
+                         column_config=ui.column_config())

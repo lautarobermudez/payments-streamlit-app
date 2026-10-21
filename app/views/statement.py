@@ -1,6 +1,6 @@
 import streamlit as st
 
-from app import metrics, queries
+from app import metrics, queries, ui
 from app.filters import Filters
 
 
@@ -19,5 +19,4 @@ def render(f: Filters) -> None:
     c3.metric('Paid', metrics.money(k['paid']))
     c4.metric('Pending', metrics.money(k['pending']))
     st.dataframe(metrics.label_columns(stm), width='stretch', hide_index=True, height=420,
-                 column_config={c: st.column_config.NumberColumn(format='%.2f')
-                                for c in ('Amount', 'Pending', 'Running pending')})
+                 column_config=ui.column_config())

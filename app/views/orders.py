@@ -2,7 +2,7 @@ import datetime as dt
 
 import streamlit as st
 
-from app import metrics, queries
+from app import metrics, queries, ui
 from app.filters import Filters
 
 
@@ -23,7 +23,7 @@ def render(f: Filters) -> None:
     with left:
         st.subheader('Payment orders')
         st.dataframe(metrics.label_columns(ops), width='stretch', hide_index=True, height=420,
-                     column_config={'Amount': st.column_config.NumberColumn(format='%.2f')})
+                     column_config=ui.column_config())
     with right:
         st.subheader('Amount by month')
         st.bar_chart(metrics.monthly_totals(ops))
