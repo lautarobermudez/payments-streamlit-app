@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: payments
+          POSTGRES_PASSWORD: payments
+          POSTGRES_DB: payments
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U payments -d payments"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://payments:payments@localhost:5432/payments
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get the database project (schema, synthetic data and loader)
+        uses: actions/checkout@v4
+        with:
+          repository: lautarobermudez/payments-data-platform
+          path: data-platform
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt -r data-platform/requirements.txt
+      - name: Create the schema and load the synthetic data
+        run: |
+          for f in data-platform/db/01_schema.sql data-platform/db/02_views.sql data-platform/db/03_bi_views.sql data-platform/db/04_treasury.sql; do
+            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+          python data-platform/etl/load_seed.py --apply
+      - name: Tests
+        run: python -m unittest discover -s tests -t . -v
